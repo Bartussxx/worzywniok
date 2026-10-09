@@ -1,4 +1,4 @@
-saldo_konto = 150.00
+saldo_konto = 1000.00
 koszyk = {}
 
 produkty = {
@@ -6,40 +6,30 @@ produkty = {
         "nazwa": "Ziemniaki",
         "cena": 3.50,
         "stan": 50.0,
-        "jednostka": "kg",
-        "rabat_prog": 3.0,
-        "rabat_procent": 0.10,
+        "jednostka": "szt.",
     },
     "marchew": {
         "nazwa": "Marchew",
         "cena": 4.00,
         "stan": 30.0,
-        "jednostka": "kg",
-        "rabat_prog": 3.0,
-        "rabat_procent": 0.15,
+        "jednostka": "szt.",
     },
     "pomidory": {
         "nazwa": "Pomidory",
-        "cena": 9.99,
+        "cena": 1.59,
         "stan": 15.0,
-        "jednostka": "kg",
-        "rabat_prog": 2.0,
-        "rabat_procent": 0.05,
+        "jednostka": "szt.",
     },
     "cebula": {
         "nazwa": "Cebula",
-        "cena": 3.00,
+        "cena": 1.00,
         "stan": 25.0,
-        "jednostka": "kg",
-        "rabat_prog": 5.0,
-        "rabat_procent": 0.20,
+        "jednostka": "szt",
     },
     "salata": {
         "nazwa": "Sałata",
-        "cena": 4.50,
+        "cena": 2.50,
         "stan": 10.0,
         "jednostka": "szt.",
-        "rabat_prog": 3.0,
-        "rabat_procent": 0.10,
     },
 }

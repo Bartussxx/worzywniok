@@ -1,56 +1,67 @@
+import tkinter as tk
 from tkinter import messagebox
 import dane
 import interfejs
 
-# Uruchomienie okna i pobranie elementów graficznych
 root, gui = interfejs.stworz_okno()
 
-def oblicz_rabat(prod, ilosc):
-    cena_bazowa = ilosc * prod["cena"]
-    rabat = 0.0
-    if ilosc >= prod["rabat_prog"]:
-        rabat = cena_bazowa * prod["rabat_procent"]
-    return cena_bazowa - rabat, rabat
+indeksy_koszyka = {}
 
 def akcja_dodaj():
     wybrane = gui["tree_asc"].selection()
     if not wybrane:
-        return
-    klucz = wybrane[0]
+        dzieci = gui["tree_asc"].get_children()
+        if dzieci:
+            klucz = dzieci[0]
+        else:
+            return
+    else:
+        klucz = wybrane[0]
+        
     prod = dane.produkty[klucz]
 
     try:
-        ilosc = float(gui["quantity_entry"].get().replace(",", "."))
+        tekst_ilosci = gui["quantity_entry"].get().strip().replace(",", ".")
+        if not tekst_ilosci:
+            ilosc = 1.0
+        else:
+            ilosc = float(tekst_ilosci)
+            
         if ilosc <= 0:
             raise ValueError
     except ValueError:
-        messagebox.showerror("Błąd", "Wpisz poprawną liczbę!")
+        messagebox.showerror("Błąd", "Wpisz poprawną liczbę (np. 1 lub 1.5)!")
         return
 
     if prod["stan"] < ilosc:
-        messagebox.showerror("Błąd", "Brak w magazynie!")
+        messagebox.showerror("Błąd", f"Brak w magazynie! Dostępne tylko: {prod['stan']} {prod['jednostka']}")
         return
 
     prod["stan"] -= ilosc
     dane.koszyk[klucz] = dane.koszyk.get(klucz, 0.0) + ilosc
+    
+    gui["quantity_entry"].delete(0, tk.END)
     odswiez()
 
 def akcja_usun():
-    wybrane = gui["tree_cart"].selection()
-    if not wybrane:
+    wybrane_indeksy = gui["list_cart"].curselection()
+    if not wybrane_indeksy:
         return
-    klucz = wybrane[0]
-    if klucz in dane.koszyk:
-        dane.produkty[klucz]["stan"] += dane.koszyk[klucz]
-        del dane.koszyk[klucz]
-        odswiez()
+    
+    idx = wybrane_indeksy[0]
+    if idx in indeksy_koszyka:
+        klucz = indeksy_koszyka[idx]
+        if klucz in dane.koszyk:
+            dane.produkty[klucz]["stan"] += dane.koszyk[klucz]
+            del dane.koszyk[klucz]
+            odswiez()
 
 def akcja_kup():
     if not dane.koszyk:
         messagebox.showinfo("Koszyk", "Koszyk jest pusty!")
         return
 
-    suma = sum(oblicz_rabat(dane.produkty[k], il)[0] for k, il in dane.koszyk.items())
+    suma = sum(il * dane.produkty[k]["cena"] for k, il in dane.koszyk.items())
 
     if dane.saldo_konto < suma:
         messagebox.showerror("Błąd", "Za mało środków na koncie!")
@@ -62,32 +73,31 @@ def akcja_kup():
     odswiez()
 
 def odswiez():
-    # Odświeżanie produktów
+    global indeksy_koszyka
+    indeksy_koszyka = {}
+
     for row in gui["tree_asc"].get_children():
         gui["tree_asc"].delete(row)
     for k, p in dane.produkty.items():
-        gui["tree_asc"].insert("", "end", iid=k, values=(p["nazwa"], f"{p['cena']:.2f} zł/{p['jednostka']}", p["stan"]))
+        gui["tree_asc"].insert("", "end", iid=k, values=(p["nazwa"], f"{p['cena']:.2f} zł/{p['jednostka']}", f"{p['stan']:.1f} {p['jednostka']}"))
 
-    # Odświeżanie koszyka
-    for row in gui["tree_cart"].get_children():
-        gui["tree_cart"].delete(row)
+    gui["list_cart"].delete(0, tk.END)
 
     suma = 0
+    i = 0
     for k, il in dane.koszyk.items():
         p = dane.produkty[k]
-        cena_koncowa, rabat_kwota = oblicz_rabat(p, il)
+        cena_koncowa = il * p["cena"]
         suma += cena_koncowa
 
-        tekst = f"{il} {p['jednostka']} = {cena_koncowa:.2f} zł"
-        if rabat_kwota > 0:
-            tekst += f" (rabat -{rabat_kwota:.2f} zł)"
-
-        gui["tree_cart"].insert("", "end", iid=k, values=(p["nazwa"], tekst))
+        tekst = f"{p['nazwa']} — {il:.1f} {p['jednostka']} = {cena_koncowa:.2f} zł"
+        gui["list_cart"].insert(tk.END, tekst)
+        indeksy_koszyka[i] = k
+        i += 1
 
     gui["lbl_suma"].config(text=f"ŁĄCZNIE DO ZAPŁATY: {suma:.2f} zł")
     gui["saldo_bar"].config(text=f"Stan konta: {dane.saldo_konto:.2f} zł")
 
-# Podpięcie funkcji pod przyciski z interfejsu
 gui["btn_dodaj"].config(command=akcja_dodaj)
 gui["btn_usun"].config(command=akcja_usun)
 gui["btn_kup"].config(command=akcja_kup)

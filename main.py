@@ -20,7 +20,7 @@ def akcja_dodaj():
         
     prod = dane.produkty[klucz]
 
-    try:
+    try:  '''rozpoczyna blok, w ktorym program rozpoczyna operacje'''
         tekst_ilosci = gui["quantity_entry"].get().strip().replace(",", ".")
         if not tekst_ilosci:
             ilosc = 1.0

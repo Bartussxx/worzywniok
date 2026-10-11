@@ -21,7 +21,7 @@ def akcja_dodaj():
     prod = dane.produkty[klucz]
 
     try:  '''rozpoczyna blok, w ktorym program rozpoczyna operacje'''
-        tekst_ilosci = gui["quantity_entry"].get().strip().replace(",", ".")
+        tekst_ilosci = gui["quantity_entry"].get().strip().replace(",", ".")     '''gui["quantity_entry"] — pole, w którym użytkownik wpisuje ilość.'''
         if not tekst_ilosci:
             ilosc = 1.0
         else:
@@ -40,20 +40,25 @@ def akcja_dodaj():
     prod["stan"] -= ilosc
     dane.koszyk[klucz] = dane.koszyk.get(klucz, 0.0) + ilosc
     
-    gui["quantity_entry"].delete(0, tk.END)
+    gui["quantity_entry"].delete(0, tk.END) 
+
+'''delete() — usuwa tekst z pola.
+0 — początek tekstu, czyli pierwszy znak.
+tk.END — koniec tekstu.'''
+
     odswiez()
 
 def akcja_usun():
-    wybrane_indeksy = gui["list_cart"].curselection()
+    wybrane_indeksy = gui["list_cart"].curselection()  '''pobiera indeksy zaznaczonych elementów.'''
     if not wybrane_indeksy:
         return
     
     idx = wybrane_indeksy[0]
     if idx in indeksy_koszyka:
-        klucz = indeksy_koszyka[idx]
+        klucz = indeksy_koszyka[idx] '''pobiera klucz produktu przypisany do tego indeksu'''
         if klucz in dane.koszyk:
             dane.produkty[klucz]["stan"] += dane.koszyk[klucz]
-            del dane.koszyk[klucz]
+            del dane.koszyk[klucz] '''usuwa wskazany element'''
             odswiez()
 
 def akcja_kup():
